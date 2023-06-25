@@ -1,12 +1,19 @@
 import { homedir } from 'os';
 import { isAbsolute, join, resolve } from 'path';
 import { promises as fs } from 'fs';
-import { fileURLToPath } from 'url';
+import { getAbsolutePath, logDir } from './helpers.js';
 
 class Navigate {
   constructor() {
-    this.currDir = homedir();
-    console.log(`You are currently in ${this.currDir}`);
+    this._currDir = homedir();
+  }
+
+  get currDir() {
+    return this._currDir;
+  }
+
+  set currDir(val) {
+    this._currDir = val;
   }
 
   goUp() {
@@ -19,6 +26,8 @@ class Navigate {
         this.currDir = newDir.join('\\');
       }
     }
+
+    logDir(this.currDir);
   }
 
   async logList() {
@@ -39,30 +48,27 @@ class Navigate {
         return data;
       });
       console.table(table);
+
+      logDir(this.currDir);
     } catch (err) {
-      throw err;
+      logDir(this.currDir, '-------- Operation failed! --------');
     }
   }
 
   async goTo(path) {
     if (!path) {
-      console.log('-------- Invalid input! --------');
+      logDir(this.currDir, '-------- Invalid input! --------');
       return;
     }
 
     try {
-      if (isAbsolute(path)) {
-        await fs.stat(path, { withFileTypes: true });
-        this.currDir = path;
-      } else {
-        const absolutePath = join(this.currDir, path);
+      const absolutePath = getAbsolutePath(this.currDir, path);
 
-        await fs.stat(absolutePath);
-        // console.log('path: ', absolutePath);
-        this.currDir = absolutePath;
-      }
+      await fs.stat(absolutePath);
+      this.currDir = absolutePath;
+      logDir(this.currDir);
     } catch (err) {
-      console.log('-------- Operation failed! --------');
+      logDir(this.currDir, '-------- Operation failed! --------');
     }
   }
 }

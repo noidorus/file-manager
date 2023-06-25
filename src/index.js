@@ -2,16 +2,25 @@ import { promises as fs } from 'node:fs';
 import { resolve } from 'node:path';
 
 import Navigate from './navigate.js';
+import FilesOperations from './filesOperations.js';
+import { logDir } from './helpers.js';
 
 class FileManager {
   constructor() {
     this.navigate = new Navigate();
+    this.files = new FilesOperations();
     this.username = getUsername();
   }
 
+  start() {
+    this.initApp();
+  }
+
   initApp() {
-    console.log(`Welcome to the File Manager, ${this.username}!`);
-    process.stdout.write('Hi write your command: ');
+    const { username, navigate } = this;
+
+    console.log(`Welcome to the File Manager, ${username}!`);
+    logDir(navigate.currDir);
 
     process.stdin.on('data', (buffer) => {
       const data = buffer.toString().trim();
@@ -28,36 +37,40 @@ class FileManager {
     });
 
     process.on('exit', () =>
-      console.log(`Thank you for using File Manager, ${this.username}, goodbye`)
+      console.log(`\n\nThank you for using File Manager, ${username}, goodbye`)
     );
-  }
-
-  start() {
-    this.initApp();
   }
 
   async validateData(data) {
     const [comand, ...args] = data.split(' ');
+    const { navigate, files } = this;
 
     switch (comand) {
       case 'up':
-        this.navigate.goUp();
+        navigate.goUp();
         break;
       case 'cd':
-        await this.navigate.goTo(args[0]);
+        await navigate.goTo(args[0]);
         break;
       case 'ls':
-        await this.navigate.logList();
+        await navigate.logList();
+        break;
+      case 'cat':
+        files.readFile(navigate.currDir, args[0]);
+        break;
+      case 'add':
+        files.addFile(navigate.currDir, args[0]);
+        break;
+      case 'rn':
+        files.renameFile(navigate.currDir, args[0], args[1]);
+        break;
+      case 'cp':
+        files.copyFile(navigate.currDir, args[0], args[1]);
         break;
       default:
-        console.log('-------- Invalid input! --------');
+        logDir(navigate.currDir, '-------- Invalid input! --------');
         break;
     }
-
-    console.log('');
-    console.log(`You are currently in ${this.navigate.currDir}`);
-    console.log('');
-    process.stdout.write('Write your command: ');
   }
 }
 
