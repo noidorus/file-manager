@@ -12,3 +12,16 @@ export const logDir = (currDir, message) => {
   console.log(`You are currently in ${currDir}`);
   process.stdout.write('~ ');
 };
+
+export const getUsername = (args) => {
+  const [username] = args
+    .filter((val) => val.includes('--username'))
+    .map((val) => val.split('=')[1]);
+
+  if (!username) {
+    throw new Error(
+      'You need to enter the username in the arguments in the format "--username=your_username"'
+    );
+  }
+  return username;
+};

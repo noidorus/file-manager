@@ -1,26 +1,20 @@
 import { promises as fs } from 'node:fs';
 import { resolve } from 'node:path';
 
-import Navigate from './scripts/navigate.js';
-import FilesOperations from './scripts/filesOperations.js';
-import { logDir } from './scripts/helpers.js';
+import Controller from './scripts/controller.js';
+import { getUsername, logDir } from './scripts/helpers.js';
 
 class FileManager {
   constructor() {
-    this.navigate = new Navigate();
-    this.files = new FilesOperations();
-    this.username = getUsername();
-  }
-
-  start() {
-    this.initApp();
+    this.controller = new Controller();
+    this.username = getUsername(process.argv.slice(2));
   }
 
   initApp() {
-    const { username, navigate } = this;
+    const { username, controller } = this;
 
     console.log(`Welcome to the File Manager, ${username}!`);
-    logDir(navigate.currDir);
+    logDir(controller.currDir);
 
     process.stdin.on('data', (buffer) => {
       const data = buffer.toString().trim();
@@ -41,57 +35,59 @@ class FileManager {
     );
   }
 
+  start() {
+    this.initApp();
+  }
+
   async validateData(data) {
     const [comand, ...args] = data.split(' ');
-    const { navigate, files } = this;
+    const { controller } = this;
 
     switch (comand) {
       case 'up':
-        navigate.goUp();
+        controller.goUp();
         break;
       case 'cd':
-        await navigate.goTo(args[0]);
+        await controller.goTo(args[0]);
         break;
       case 'ls':
-        await navigate.logList();
+        await controller.logList();
         break;
       case 'cat':
-        files.readFile(navigate.currDir, args[0]);
+        controller.readFile(args[0]);
         break;
       case 'add':
-        files.addFile(navigate.currDir, args[0]);
+        controller.addFile(args[0]);
         break;
       case 'rn':
-        files.renameFile(navigate.currDir, args[0], args[1]);
+        controller.renameFile(args[0], args[1]);
         break;
       case 'cp':
-        files.mooveFile(navigate.currDir, args[0], args[1]);
+        controller.mooveFile(args[0], args[1]);
         break;
       case 'mv':
-        files.mooveFile(navigate.currDir, args[0], args[1], true);
+        controller.mooveFile(args[0], args[1], true);
         break;
       case 'rm':
-        files.removeFile(navigate.currDir, args[0], true);
+        controller.removeFile(args[0], true);
+        break;
+      case 'os':
+        controller.os(args[0]);
+        break;
+      case 'compress':
+        controller.compress(args[0], args[1]);
+        break;
+      case 'decompress':
+        controller.decompress(args[0], args[1]);
+        break;
+      case 'hash':
+        controller.getHash(args[0]);
         break;
       default:
-        logDir(navigate.currDir, '-------- Invalid input! --------');
+        logDir(controller.currDir, '-------- Invalid input! --------');
         break;
     }
   }
-}
-
-function getUsername() {
-  const [username] = process.argv
-    .slice(2)
-    .filter((val) => val.includes('--username'))
-    .map((val) => val.split('=')[1]);
-
-  if (!username) {
-    throw new Error(
-      'You need to enter the username in the arguments in the format "--username=your_username"'
-    );
-  }
-  return username;
 }
 
 const fileManager = new FileManager();
