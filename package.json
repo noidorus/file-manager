@@ -1,0 +1,19 @@
+{
+  "name": "file-manager",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js -- --username=Noidor"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HuffPuffTuff/file-manager.git"
+  },
+  "author": "huffpufftuff",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HuffPuffTuff/file-manager/issues"
+  },
+  "homepage": "https://github.com/HuffPuffTuff/file-manager#readme"
+}
