@@ -1,9 +1,9 @@
 import { promises as fs } from 'node:fs';
 import { resolve } from 'node:path';
 
-import Navigate from './navigate.js';
-import FilesOperations from './filesOperations.js';
-import { logDir } from './helpers.js';
+import Navigate from './scripts/navigate.js';
+import FilesOperations from './scripts/filesOperations.js';
+import { logDir } from './scripts/helpers.js';
 
 class FileManager {
   constructor() {
@@ -65,7 +65,13 @@ class FileManager {
         files.renameFile(navigate.currDir, args[0], args[1]);
         break;
       case 'cp':
-        files.copyFile(navigate.currDir, args[0], args[1]);
+        files.mooveFile(navigate.currDir, args[0], args[1]);
+        break;
+      case 'mv':
+        files.mooveFile(navigate.currDir, args[0], args[1], true);
+        break;
+      case 'rm':
+        files.removeFile(navigate.currDir, args[0], true);
         break;
       default:
         logDir(navigate.currDir, '-------- Invalid input! --------');

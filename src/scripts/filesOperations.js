@@ -43,7 +43,7 @@ class FilesOperations {
       console.log(`\n${fileName} create in ${currDir}`);
       logDir(currDir);
     } catch (err) {
-      logDir(currDir, '-------- Operation failed! --------');
+      logDir(currDir, '-------- Add operation failed! --------');
     }
   }
 
@@ -60,25 +60,39 @@ class FilesOperations {
       await fs.rename(oldFilePath, newFilePath);
       logDir(currDir, `${oldFilePath} renamed to ${newFileName}`);
     } catch (err) {
-      logDir(currDir, '-------- Operation failed! --------');
+      logDir(currDir, '-------- Rename operation failed! --------');
     }
   }
 
-  async mooveFile(currDir, filePath, pathToNewDirectory) {
-    if (!filePath || !pathToNewDirectory) {
+  async removeFile(currDir, path, message = true) {
+    if (!path) {
       logDir(currDir, '-------- Invalid input! --------');
-      return;
+    }
+
+    const filePath = getAbsolutePath(currDir, path);
+    try {
+      await fs.unlink(filePath);
+
+      if (message) {
+        logDir(currDir, `${filePath} removed`);
+      }
+    } catch (err) {
+      logDir(currDir, '-------- Remove operation failed! --------');
     }
   }
 
-  async copyFile(currDir, filePath, pathToNewDirectory) {
+  async mooveFile(currDir, filePath, pathToNewDirectory, toDelete = false) {
     if (!filePath || !pathToNewDirectory) {
       logDir(currDir, '-------- Invalid input! --------');
       return;
+      // mv test\test2.md C:\Users\huffpuff\test
     }
 
     const oldFilePath = getAbsolutePath(currDir, filePath);
     const newDirectory = getAbsolutePath(currDir, pathToNewDirectory);
+
+    console.log('oldFilePath: ', oldFilePath);
+    console.log('newDirectory: ', newDirectory);
 
     const [fileName] = oldFilePath.split('\\').slice(-1);
 
@@ -92,9 +106,15 @@ class FilesOperations {
       logDir(currDir, '-------- ReadStream operation failed! --------');
     });
 
-    readStream.on('end', () => {
+    readStream.on('end', async () => {
       console.log('');
-      logDir(currDir, `${fileName} copied to ${newDirectory}`);
+      if (toDelete === true) {
+        await this.removeFile(currDir, oldFilePath, false);
+
+        logDir(currDir, `${fileName} mooved to ${newDirectory}`);
+      } else {
+        logDir(currDir, `${fileName} copied to ${newDirectory}`);
+      }
     });
 
     writeStream.on('error', () => {
